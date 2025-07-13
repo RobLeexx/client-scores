@@ -1,25 +1,34 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import "./App.css"; // Puedes usar tus estilos CSS existentes o dejarlo vacío
+import UserTable from "./components/UserDataGrid";
+import { CssBaseline, Container } from "@mui/material"; // Para estilos básicos de Material-UI
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <>
+      <CssBaseline /> {/* Normaliza los estilos CSS */}
+      <div className="App">
+        <header
+          className="App-header"
+          style={{
+            textAlign: "center",
+            marginBottom: "20px",
+            backgroundColor: "#3f51b5",
+            color: "white",
+            padding: "10px",
+          }}
         >
-          Learn React
-        </a>
-      </header>
-    </div>
+          <h1>Mi Aplicación de Datos (con MUI Table)</h1>
+        </header>
+        <Container maxWidth="md">
+          {" "}
+          {/* Limita el ancho del contenido */}
+          <main style={{ padding: "20px" }}>
+            <UserTable />
+          </main>
+        </Container>
+      </div>
+    </>
   );
 }
 
