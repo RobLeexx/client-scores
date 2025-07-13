@@ -8,16 +8,21 @@ import {
   TableRow,
   Paper,
   Typography,
-  TextField, // Importar TextField
-  Box, // Importar Box para organizar los TextField
+  TextField,
+  Box,
+  TablePagination, // Importar TablePagination
 } from "@mui/material";
 import { UserData } from "../types";
 import { generateRandomUserData } from "../utils/dataGenerator";
 
 const UserTable: React.FC = () => {
-  const [allRows, setAllRows] = useState<UserData[]>([]); // Almacena todos los datos originales
-  const [documentFilter, setDocumentFilter] = useState<string>(""); // Estado para el filtro de documento
-  const [nameFilter, setNameFilter] = useState<string>(""); // Estado para el filtro de nombre
+  const [allRows, setAllRows] = useState<UserData[]>([]);
+  const [documentFilter, setDocumentFilter] = useState<string>("");
+  const [nameFilter, setNameFilter] = useState<string>("");
+
+  // Estados para la paginación
+  const [page, setPage] = useState(0); // Página actual (0-indexado)
+  const [rowsPerPage, setRowsPerPage] = useState(10); // Filas por página
 
   useEffect(() => {
     // Genera 50 filas de datos aleatorios al cargar el componente
@@ -25,8 +30,11 @@ const UserTable: React.FC = () => {
     setAllRows(data);
   }, []);
 
-  // Use useMemo para filtrar los datos solo cuando cambian los filtros o los datos originales
+  // Filtra los datos primero
   const filteredRows = useMemo(() => {
+    // Cuando cambian los filtros, volvemos a la primera página
+    // Esto es una buena práctica para evitar que el usuario quede en una página vacía
+    setPage(0);
     return allRows.filter((row) => {
       const matchesDocument = row.documentNumber
         .toLowerCase()
@@ -37,6 +45,27 @@ const UserTable: React.FC = () => {
       return matchesDocument && matchesName;
     });
   }, [allRows, documentFilter, nameFilter]);
+
+  // Aplica la paginación a los datos filtrados
+  const paginatedRows = useMemo(() => {
+    return filteredRows.slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage
+    );
+  }, [filteredRows, page, rowsPerPage]);
+
+  // Manejador para el cambio de página
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  // Manejador para el cambio de filas por página
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Volver a la primera página al cambiar las filas por página
+  };
 
   return (
     <TableContainer
@@ -51,7 +80,6 @@ const UserTable: React.FC = () => {
         Datos de Usuarios
       </Typography>
 
-      {/* Contenedor para las barras de búsqueda */}
       <Box
         sx={{
           padding: "16px",
@@ -89,8 +117,8 @@ const UserTable: React.FC = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {filteredRows.length > 0 ? (
-            filteredRows.map((row) => (
+          {paginatedRows.length > 0 ? (
+            paginatedRows.map((row) => (
               <TableRow
                 key={row.id}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
@@ -112,6 +140,21 @@ const UserTable: React.FC = () => {
           )}
         </TableBody>
       </Table>
+
+      {/* Componente de Paginación */}
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]} // Opciones para el número de filas por página
+        component="div"
+        count={filteredRows.length} // Total de filas después del filtrado
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        labelRowsPerPage="Filas por página:" // Personalizar el texto
+        labelDisplayedRows={({ from, to, count }) =>
+          `${from}-${to} de ${count}`
+        } // Personalizar el texto de visualización
+      />
     </TableContainer>
   );
 };
